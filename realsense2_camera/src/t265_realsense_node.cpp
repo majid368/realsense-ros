@@ -12,6 +12,18 @@ T265RealsenseNode::T265RealsenseNode(ros::NodeHandle& nodeHandle,
                                      {
                                          _monitor_options = {RS2_OPTION_ASIC_TEMPERATURE, RS2_OPTION_MOTION_MODULE_TEMPERATURE};
                                          initializeOdometryInput();
+                                         rs2::log_to_callback( rs2_log_severity::RS2_LOG_SEVERITY_WARN, [&]
+                                         ( rs2_log_severity severity, rs2::log_message const & msg ) noexcept {
+                                            std::cout << "msg.build()" << std::endl;
+                                            std::cout << msg.raw() << std::endl;
+                                            std::string str = msg.raw();
+                                            if(str .find("SLAM_ERROR") != std::string::npos) {
+                                            // T265RealsenseNode::slamErrorCallBack();
+                                            s_updater1.setHardwareID("none");
+                                            s_updater1.add("Warning ",this, & T265RealsenseNode::dummy_diagnostic);
+                                             s_updater1.force_update();
+                                            }
+                                         });
                                      }
 
 void T265RealsenseNode::initializeOdometryInput()
@@ -116,4 +128,10 @@ void T265RealsenseNode::calcAndPublishStaticTransform(const stream_index_pair& s
             publish_static_tf(transform_ts_, zero_trans, quaternion_optical, _depth_aligned_frame_id[stream], _optical_frame_id[stream]);
         }
     }
+}
+
+void T265RealsenseNode::dummy_diagnostic(diagnostic_updater::DiagnosticStatusWrapper& status)
+{
+        status.summary(diagnostic_msgs::DiagnosticStatus::WARN, "SLAM_ERROR");
+
 }
