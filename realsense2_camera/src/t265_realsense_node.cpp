@@ -23,6 +23,13 @@ T265RealsenseNode::T265RealsenseNode(ros::NodeHandle& nodeHandle,
                                             s_updater1.add("Warning ",this, & T265RealsenseNode::dummy_diagnostic);
                                              s_updater1.force_update();
                                             }
+                                            if(str .find("RS2_USB_STATUS_IO") != std::string::npos) {
+                                            // T265RealsenseNode::slamErrorCallBack();
+                                            s_updater1.setHardwareID("none");
+                                            s_updater1.add("ERROR ",this, & T265RealsenseNode::error_callback);
+                                             s_updater1.force_update();
+                                            }
+                                            
                                          });
                                      }
 
@@ -135,3 +142,10 @@ void T265RealsenseNode::dummy_diagnostic(diagnostic_updater::DiagnosticStatusWra
         status.summary(diagnostic_msgs::DiagnosticStatus::WARN, "SLAM_ERROR");
 
 }
+
+void T265RealsenseNode::error_callback(diagnostic_updater::DiagnosticStatusWrapper& status)
+{
+        status.summary(diagnostic_msgs::DiagnosticStatus::ERROR, "The device has been disconnected");
+
+}
+
