@@ -13,17 +13,20 @@ T265RealsenseNode::T265RealsenseNode(ros::NodeHandle& nodeHandle,
                                      {
                                          _monitor_options = {RS2_OPTION_ASIC_TEMPERATURE, RS2_OPTION_MOTION_MODULE_TEMPERATURE};
                                          initializeOdometryInput();
-                                         rs2::log_to_callback( rs2_log_severity::RS2_LOG_SEVERITY_WARN, [&]
-                                         ( rs2_log_severity severity, rs2::log_message const & msg ) noexcept {
-                                            std::string str = msg.raw();
-                                            callback_updater.add("Warning ",this, & T265RealsenseNode::dummy_diagnostic);
-                                            if(str .find("SLAM_ERROR") != std::string::npos) {
-                                              callback_updater.broadcast(diagnostic_msgs::DiagnosticStatus::WARN, str);
-                                            }
-                                            if(str .find("RS2_USB_STATUS_IO") != std::string::npos) {
-                                            callback_updater.broadcast(diagnostic_msgs::DiagnosticStatus::ERROR, "The device has been disconnected");
-                                            }
-                                         });
+                                         handleWarning();
+                                        //  rs2::log_to_callback( rs2_log_severity::RS2_LOG_SEVERITY_WARN, [&]
+                                        //  ( rs2_log_severity severity, rs2::log_message const & msg ) noexcept {
+                                        //     _T265_fault =  msg.raw();
+                                        //     std::array<std::string, 3> a{"SLAM_ERROR", "Bulk request error RS2_USB_STATUS_NO_DEVICE", "Stream transfer failed, exiting"};
+                                        //     auto it = std::find_if(begin(a), end(a),
+                                        //       [&](const std::string& s)
+                                        //         {return _T265_fault.find(s) != std::string::npos; });
+                                        //     if (it != end(a))
+                                        //     {
+                                        //     callback_updater.add("Warning ",this, & T265RealsenseNode::dummy_diagnostic);
+                                        //     callback_updater.force_update();
+                                        //     }
+                                        //  });
                                      }
 
 void T265RealsenseNode::initializeOdometryInput()
@@ -57,6 +60,23 @@ void T265RealsenseNode::publishTopics()
 {
     BaseRealSenseNode::publishTopics();
     setupSubscribers();
+}
+
+void  T265RealsenseNode::handleWarning()
+{
+    rs2::log_to_callback( rs2_log_severity::RS2_LOG_SEVERITY_WARN, [&]
+                            ( rs2_log_severity severity, rs2::log_message const & msg ) noexcept {
+                                _T265_fault =  msg.raw();
+                                std::array<std::string, 3> list_of_fault{"SLAM_ERROR", "Bulk request error RS2_USB_STATUS_NO_DEVICE", "Stream transfer failed, exiting"};
+                                            auto it = std::find_if(begin(list_of_fault), end(list_of_fault),
+                                              [&](const std::string& s)
+                                                {return _T265_fault.find(s) != std::string::npos; });
+                                            if (it != end(list_of_fault))
+                                            {
+                                            callback_updater.add("Warning ",this, & T265RealsenseNode::warning_diagnostic);
+                                            callback_updater.force_update();
+                                            }
+                                         });
 }
 
 void T265RealsenseNode::setupSubscribers()
@@ -130,7 +150,8 @@ void T265RealsenseNode::calcAndPublishStaticTransform(const stream_index_pair& s
     }
 }
 
-void T265RealsenseNode::dummy_diagnostic(diagnostic_updater::DiagnosticStatusWrapper& status)
+void T265RealsenseNode::warning_diagnostic(diagnostic_updater::DiagnosticStatusWrapper& status)
 {
+  status.summary(diagnostic_msgs::DiagnosticStatus::WARN, _T265_fault);
 
 }
