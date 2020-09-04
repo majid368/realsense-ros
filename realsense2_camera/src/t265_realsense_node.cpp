@@ -14,19 +14,6 @@ T265RealsenseNode::T265RealsenseNode(ros::NodeHandle& nodeHandle,
                                          _monitor_options = {RS2_OPTION_ASIC_TEMPERATURE, RS2_OPTION_MOTION_MODULE_TEMPERATURE};
                                          initializeOdometryInput();
                                          handleWarning();
-                                        //  rs2::log_to_callback( rs2_log_severity::RS2_LOG_SEVERITY_WARN, [&]
-                                        //  ( rs2_log_severity severity, rs2::log_message const & msg ) noexcept {
-                                        //     _T265_fault =  msg.raw();
-                                        //     std::array<std::string, 3> a{"SLAM_ERROR", "Bulk request error RS2_USB_STATUS_NO_DEVICE", "Stream transfer failed, exiting"};
-                                        //     auto it = std::find_if(begin(a), end(a),
-                                        //       [&](const std::string& s)
-                                        //         {return _T265_fault.find(s) != std::string::npos; });
-                                        //     if (it != end(a))
-                                        //     {
-                                        //     callback_updater.add("Warning ",this, & T265RealsenseNode::dummy_diagnostic);
-                                        //     callback_updater.force_update();
-                                        //     }
-                                        //  });
                                      }
 
 void T265RealsenseNode::initializeOdometryInput()
@@ -65,18 +52,18 @@ void T265RealsenseNode::publishTopics()
 void  T265RealsenseNode::handleWarning()
 {
     rs2::log_to_callback( rs2_log_severity::RS2_LOG_SEVERITY_WARN, [&]
-                            ( rs2_log_severity severity, rs2::log_message const & msg ) noexcept {
-                                _T265_fault =  msg.raw();
-                                std::array<std::string, 2> list_of_fault{"SLAM_ERROR", "Stream transfer failed, exiting"};
-                                            auto it = std::find_if(begin(list_of_fault), end(list_of_fault),
-                                              [&](const std::string& s)
-                                                {return _T265_fault.find(s) != std::string::npos; });
-                                            if (it != end(list_of_fault))
-                                            {
-                                            callback_updater.add("Warning ",this, & T265RealsenseNode::warning_diagnostic);
-                                            callback_updater.force_update();
-                                            }
-                                         });
+      ( rs2_log_severity severity, rs2::log_message const & msg ) noexcept {
+        _T265_fault =  msg.raw();
+        std::array<std::string, 2> list_of_fault{"SLAM_ERROR", "Stream transfer failed, exiting"};
+        auto it = std::find_if(begin(list_of_fault), end(list_of_fault),
+        [&](const std::string& s)
+        {return _T265_fault.find(s) != std::string::npos; });
+        if (it != end(list_of_fault))
+        {
+          callback_updater.add("Warning ",this, & T265RealsenseNode::warning_diagnostic);
+          callback_updater.force_update();
+        }
+    });
 }
 
 void T265RealsenseNode::setupSubscribers()

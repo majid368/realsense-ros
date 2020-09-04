@@ -20,10 +20,11 @@ namespace realsense2_camera
             void initializeOdometryInput();
             void setupSubscribers();
             void handleWarning();   
-
             void odom_in_callback(const nav_msgs::Odometry::ConstPtr& msg);
-            diagnostic_updater::Updater callback_updater;
             void warning_diagnostic (diagnostic_updater::DiagnosticStatusWrapper &stat);
+
+            diagnostic_updater::Updater callback_updater;
+
             ros::Subscriber _odom_subscriber;
             rs2::wheel_odometer _wo_snr;
             bool _use_odom_in;
