@@ -67,7 +67,7 @@ void  T265RealsenseNode::handleWarning()
     rs2::log_to_callback( rs2_log_severity::RS2_LOG_SEVERITY_WARN, [&]
                             ( rs2_log_severity severity, rs2::log_message const & msg ) noexcept {
                                 _T265_fault =  msg.raw();
-                                std::array<std::string, 3> list_of_fault{"SLAM_ERROR", "Bulk request error RS2_USB_STATUS_NO_DEVICE", "Stream transfer failed, exiting"};
+                                std::array<std::string, 2> list_of_fault{"SLAM_ERROR", "Stream transfer failed, exiting"};
                                             auto it = std::find_if(begin(list_of_fault), end(list_of_fault),
                                               [&](const std::string& s)
                                                 {return _T265_fault.find(s) != std::string::npos; });
