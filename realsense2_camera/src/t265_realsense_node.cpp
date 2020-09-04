@@ -1,4 +1,5 @@
 #include "../include/t265_realsense_node.h"
+#include <functional>
 
 using namespace realsense2_camera;
 
@@ -14,22 +15,14 @@ T265RealsenseNode::T265RealsenseNode(ros::NodeHandle& nodeHandle,
                                          initializeOdometryInput();
                                          rs2::log_to_callback( rs2_log_severity::RS2_LOG_SEVERITY_WARN, [&]
                                          ( rs2_log_severity severity, rs2::log_message const & msg ) noexcept {
-                                            std::cout << "msg.build()" << std::endl;
-                                            std::cout << msg.raw() << std::endl;
                                             std::string str = msg.raw();
+                                            callback_updater.add("Warning ",this, & T265RealsenseNode::dummy_diagnostic);
                                             if(str .find("SLAM_ERROR") != std::string::npos) {
-                                            // T265RealsenseNode::slamErrorCallBack();
-                                            s_updater1.setHardwareID("none");
-                                            s_updater1.add("Warning ",this, & T265RealsenseNode::dummy_diagnostic);
-                                             s_updater1.force_update();
+                                              callback_updater.broadcast(diagnostic_msgs::DiagnosticStatus::WARN, str);
                                             }
                                             if(str .find("RS2_USB_STATUS_IO") != std::string::npos) {
-                                            // T265RealsenseNode::slamErrorCallBack();
-                                            s_updater1.setHardwareID("none");
-                                            s_updater1.add("ERROR ",this, & T265RealsenseNode::error_callback);
-                                             s_updater1.force_update();
+                                            callback_updater.broadcast(diagnostic_msgs::DiagnosticStatus::ERROR, "The device has been disconnected");
                                             }
-                                            
                                          });
                                      }
 
@@ -139,13 +132,5 @@ void T265RealsenseNode::calcAndPublishStaticTransform(const stream_index_pair& s
 
 void T265RealsenseNode::dummy_diagnostic(diagnostic_updater::DiagnosticStatusWrapper& status)
 {
-        status.summary(diagnostic_msgs::DiagnosticStatus::WARN, "SLAM_ERROR");
 
 }
-
-void T265RealsenseNode::error_callback(diagnostic_updater::DiagnosticStatusWrapper& status)
-{
-        status.summary(diagnostic_msgs::DiagnosticStatus::ERROR, "The device has been disconnected");
-
-}
-
