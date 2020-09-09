@@ -21,8 +21,7 @@ namespace realsense2_camera
             void setupSubscribers();
             void handleWarning();   
             void odom_in_callback(const nav_msgs::Odometry::ConstPtr& msg);
-            void warning_diagnostic (diagnostic_updater::DiagnosticStatusWrapper &stat);
-
+            void warningDiagnostic (diagnostic_updater::DiagnosticStatusWrapper &stat);
             diagnostic_updater::Updater callback_updater;
 
             ros::Subscriber _odom_subscriber;

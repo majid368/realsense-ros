@@ -56,11 +56,10 @@ void  T265RealsenseNode::handleWarning()
         _T265_fault =  msg.raw();
         std::array<std::string, 2> list_of_fault{"SLAM_ERROR", "Stream transfer failed, exiting"};
         auto it = std::find_if(begin(list_of_fault), end(list_of_fault),
-        [&](const std::string& s)
-        {return _T265_fault.find(s) != std::string::npos; });
+                  [&](const std::string& s) {return _T265_fault.find(s) != std::string::npos; });
         if (it != end(list_of_fault))
         {
-          callback_updater.add("Warning ",this, & T265RealsenseNode::warning_diagnostic);
+          callback_updater.add("Warning ",this, & T265RealsenseNode::warningDiagnostic);
           callback_updater.force_update();
         }
     });
@@ -137,7 +136,7 @@ void T265RealsenseNode::calcAndPublishStaticTransform(const stream_index_pair& s
     }
 }
 
-void T265RealsenseNode::warning_diagnostic(diagnostic_updater::DiagnosticStatusWrapper& status)
+void T265RealsenseNode::warningDiagnostic(diagnostic_updater::DiagnosticStatusWrapper& status)
 {
   status.summary(diagnostic_msgs::DiagnosticStatus::WARN, _T265_fault);
 
